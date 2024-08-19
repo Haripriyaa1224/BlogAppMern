@@ -2,13 +2,17 @@ import React, { useState } from 'react'
 import {Link, useNavigate} from 'react-router-dom';
 import {Alert, Button, Label, Spinner, TextInput} from 'flowbite-react'
 import axios from 'axios';
+import { useDispatch, useSelector } from 'react-redux';
+import { signInStart, signInSuccess, signInFailure } from '../redux/user/userSlice';
 
 const SignIn = () => {
 
   const [formData, setFormData] = useState({});
-  const [errorMessage, setErrorMessage] = useState(null);
-  const [loading, setLoading] = useState(false);
+  // const [errorMessage, setErrorMessage] = useState(null);
+  // const [loading, setLoading] = useState(false);
+  const { loading, error: errorMessage} = useSelector(state=>state.user)
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   
 
   const handleChange = (e)=>{
@@ -20,22 +24,25 @@ const SignIn = () => {
     e.preventDefault();
 
     try{
-      setLoading(true);
-      setErrorMessage(null);
+      // setLoading(true);
+      // setErrorMessage(null);
+      dispatch(signInStart());
 
       
       const res = await axios.post('/api/auth/signin', formData)
       // console.log(res.data);
-      setLoading(false);
+      // setLoading(false);
       if(res.status === 200){
+        dispatch(signInSuccess(res.data));
         navigate('/home');
         
       }
     }catch(err){
       // console.log(err.response.data.message);
-      setErrorMessage(err.response.data.message);
+      dispatch(signInFailure(err.response.data.message));
+      // setErrorMessage(err.response.data.message);
       
-      setLoading(false);
+      // setLoading(false);
     }
     
     
@@ -78,9 +85,9 @@ const SignIn = () => {
             </Button>
           </form>
           <div className="flex gap-2 text-sm mt-5">
-            <span>Have an account?</span>
-            <Link to='/sign-in' className='text-blue-500'>
-              Sign In
+            <span>Don't Have an account?</span>
+            <Link to='/sign-up' className='text-blue-500'>
+              Sign Up
             </Link>
           </div>
           {errorMessage && (<Alert className='mt-5' color='failure'>{errorMessage}</Alert>)}
